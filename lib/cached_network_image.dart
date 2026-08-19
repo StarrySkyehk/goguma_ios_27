@@ -37,7 +37,7 @@ class CachedNetworkImage extends ImageProvider<CachedNetworkImage> {
 	Future<Codec> _loadAsync(ImageDecoderCallback decode, StreamController<ImageChunkEvent> chunkEvents) async {
 		try {
 			var raw = await _fetch(Uri.base.resolve(url), chunkEvents);
-			return decode(await ImmutableBuffer.fromUint8List(raw));
+			return await decode(await ImmutableBuffer.fromUint8List(raw));
 		} finally {
 			await chunkEvents.close();
 		}
