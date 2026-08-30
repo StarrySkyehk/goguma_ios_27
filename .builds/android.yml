@@ -2,7 +2,9 @@ image: archlinux
 packages:
   - android-sdk
   - android-sdk-build-tools
-  - android-sdk-cmdline-tools-latest
+  # Workaround licenses not being accepted with v23:
+  # https://github.com/flutter/flutter/issues/189936
+  - android-sdk-cmdline-tools-latest-22
   - android-sdk-platform-tools
   - clang
   - jdk21-openjdk
