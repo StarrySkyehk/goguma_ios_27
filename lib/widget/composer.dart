@@ -99,6 +99,11 @@ class ComposerState extends State<Composer> {
 		if (!attachments.isEmpty) {
 			var file = XFile(attachments.single!.path);
 			_runAddMenuTask(() async {
+				var client = context.read<Client>();
+				if (client.isupport.filehost == null) {
+					throw Exception('Server doesn\'t support file uploads');
+				}
+
 				await _uploadFile(file);
 			});
 		}
