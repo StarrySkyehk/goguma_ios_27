@@ -101,6 +101,7 @@ class _SettingsPageState extends State<SettingsPage> {
 	@override
 	Widget build(BuildContext context) {
 		var networkList = context.watch<NetworkListModel>();
+		var aboutUrl = Uri.parse('https://codeberg.org/emersion/goguma');
 
 		NetworkModel? mainNetwork;
 		for (var network in networkList.networks) {
@@ -223,12 +224,16 @@ class _SettingsPageState extends State<SettingsPage> {
 					},
 				),
 				Divider(),
-				ListTile(
-					title: Text('About'),
-					leading: Icon(Icons.info),
-					onTap: () {
-						launchUrl(Uri.parse('https://codeberg.org/emersion/goguma'));
-					},
+				Semantics(
+					link: true,
+					linkUrl: aboutUrl,
+					child: ListTile(
+						title: Text('About'),
+						leading: Icon(Icons.info),
+						onTap: () {
+							launchUrl(aboutUrl);
+						},
+					),
 				),
 				ListTile(
 					title: Text('Logout'),
