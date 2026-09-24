@@ -158,7 +158,7 @@ class _IrcChannelLinkifier extends Linkifier {
 
 	const _IrcChannelLinkifier(this.baseUri);
 
-	static final _charRegExp = RegExp(r'^[\p{Letter}0-9#.-]$', unicode: true);
+	static final _charRegExp = RegExp(r'^[\p{Letter}0-9#._-]$', unicode: true);
 
 	@override
 	List<LinkifyElement> parse(List<LinkifyElement> elements, LinkifyOptions options) {
