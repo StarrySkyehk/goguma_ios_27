@@ -658,8 +658,9 @@ class ClientController {
 
 			for (var buffer in _bufferList.buffers) {
 				if (buffer.network == network && buffer.members?.members.containsKey(msg.source.name) == true) {
-					buffer.members!.set(newNickname, buffer.members!.members[msg.source.name]!);
+					var prefix = buffer.members!.members[msg.source.name]!;
 					buffer.members!.remove(msg.source.name);
+					buffer.members!.set(newNickname, prefix);
 				}
 			}
 

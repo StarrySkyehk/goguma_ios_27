@@ -778,9 +778,9 @@ class UserListModel extends ChangeNotifier {
 		if (user == null) {
 			return;
 		}
+		_map.remove(oldNickname);
 		_map[newNickname] = user;
 		user._nickname = newNickname;
-		_map.remove(oldNickname);
 		user.notifyListeners();
 		notifyListeners();
 	}
