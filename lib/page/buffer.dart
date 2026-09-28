@@ -411,7 +411,8 @@ class _BufferPageState extends State<BufferPage> with WidgetsBindingObserver, Ti
 		var isOnline = network.state == NetworkState.synchronizing || network.state == NetworkState.online;
 		var canSendMessage = canSendMessageToBuffer(buffer, network);
 		var isChannel = client.isChannel(buffer.name);
-		var showComposer = !buffer.archived && !(isOnline && isChannel && !buffer.joined);
+		var hasLeftChannel = network.state == NetworkState.online && isChannel && !buffer.joined && !buffer.joining;
+		var showComposer = !buffer.archived && !hasLeftChannel;
 		var messages = buffer.messages;
 
 		var compact = prefs.bufferCompact;
@@ -428,7 +429,7 @@ class _BufferPageState extends State<BufferPage> with WidgetsBindingObserver, Ti
 		}
 
 		MaterialBanner? banner;
-		if (network.state == NetworkState.online && isChannel && !buffer.joined && !buffer.joining) {
+		if (hasLeftChannel) {
 			banner = MaterialBanner(
 				content: Text('You have left this channel.'),
 				actions: [
