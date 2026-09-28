@@ -356,7 +356,7 @@ class _ReactionsRow extends StatelessWidget {
 			.map((entry) => MapEntry(entry.key, entry.value.length))
 			.toList();
 		if (entries.length > 3) {
-			entries.sort((a, b) => a.value.compareTo(b.value));
+			entries.sort((a, b) => -a.value.compareTo(b.value));
 			entries = entries.take(2).toList();
 		}
 		_reactions = entries;
