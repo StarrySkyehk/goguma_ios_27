@@ -257,7 +257,7 @@ class ComposerState extends State<Composer> {
 				],
 			),
 		);
-		return result!;
+		return result ?? false;
 	}
 
 	Future<bool> _submitText(String text) async {
