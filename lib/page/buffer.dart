@@ -411,6 +411,7 @@ class _BufferPageState extends State<BufferPage> with WidgetsBindingObserver, Ti
 		var isOnline = network.state == NetworkState.synchronizing || network.state == NetworkState.online;
 		var canSendMessage = canSendMessageToBuffer(buffer, network);
 		var isChannel = client.isChannel(buffer.name);
+		var showComposer = !buffer.archived && !(isOnline && isChannel && !buffer.joined);
 		var messages = buffer.messages;
 
 		var compact = prefs.bufferCompact;
@@ -508,7 +509,7 @@ class _BufferPageState extends State<BufferPage> with WidgetsBindingObserver, Ti
 					var key = ValueKey(msg.id);
 
 					VoidCallback? onReply;
-					if (isChannel) {
+					if (isChannel && showComposer) {
 						onReply = () {
 							_composerKey.currentState!.setReplyTo(msg);
 						};
@@ -547,7 +548,7 @@ class _BufferPageState extends State<BufferPage> with WidgetsBindingObserver, Ti
 		}
 
 		Widget? composer;
-		if (!buffer.archived && !(isOnline && isChannel && !buffer.joined)) {
+		if (showComposer) {
 			composer = Padding(
 				// Hack to keep the bottomNavigationBar displayed when the
 				// virtual keyboard shows up
