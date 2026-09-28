@@ -51,8 +51,12 @@ class _JoinPageState extends State<JoinPage> {
 	}
 
 	void _search(String query) async {
+		_serial++;
+		var serial = _serial;
+
 		setState(() {
 			_actions = [];
+			_loading = false;
 		});
 
 		query = query.trim();
@@ -60,9 +64,6 @@ class _JoinPageState extends State<JoinPage> {
 		if (query.length < 2) {
 			return;
 		}
-
-		_serial++;
-		var serial = _serial;
 
 		setState(() {
 			_loading = true;
