@@ -1292,7 +1292,7 @@ class Client {
 
 	Future<void> setNickname(String nick) async {
 		var msg = IrcMessage('NICK', [nick]);
-		var oldNick = nick;
+		var oldNick = this.nick;
 		await _roundtripMessage(msg, (msg) {
 			return msg.cmd == 'NICK' && isupport.caseMapping.equals(msg.source.name, oldNick);
 		});
