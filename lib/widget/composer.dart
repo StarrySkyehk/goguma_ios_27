@@ -280,7 +280,7 @@ class ComposerState extends State<Composer> {
 		var network = context.read<NetworkModel>();
 		if (!canSendMessageToBuffer(buffer, network)) {
 			ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-				content: Text('Network is offline'),
+				content: Text(buffer.online == false ? 'User is offline' : 'Network is offline'),
 			));
 			return;
 		}
