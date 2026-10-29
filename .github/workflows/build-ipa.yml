@@ -1,0 +1,127 @@
+name: ios-ipa
+
+# Builds an unsigned iOS IPA for goguma (Flutter) — this repository already
+# carries the iOS 27 UIScene migration, so no external overlay is applied.
+#
+# The produced IPA is unsigned: install it with a sideloading tool that
+# re-signs it for the device (e.g. iloader).
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'macOS runner image'
+        required: true
+        default: 'xcode-27'
+        type: choice
+        options:
+          - xcode-27
+          - macos-26
+          - macos-latest
+      flutter_version:
+        description: 'Flutter SDK version'
+        required: false
+        default: '3.47.8'
+      label:
+        description: 'artifact label suffix'
+        required: false
+        default: 'goguma'
+      skip_build:
+        description: 'only run pub get + pod install (fast smoke test, no IPA)'
+        required: false
+        default: 'false'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+
+permissions:
+  contents: read
+
+jobs:
+  build-ios:
+    name: "Build unsigned IPA (goguma)"
+    runs-on: ${{ inputs.runner || 'xcode-27' }}
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode
+        run: |
+          xcode-select -p
+          xcodebuild -version
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.16.0
+        with:
+          channel: stable
+          flutter-version: ${{ inputs.flutter_version || '3.47.8' }}
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: CocoaPods install
+        working-directory: ios
+        env:
+          COCOAPODS_DISABLE_STATS: 'true'
+        run: |
+          set -euo pipefail
+          pod --version
+          pod install --repo-update || pod install
+
+      - name: Build iOS (no codesign)
+        if: ${{ inputs.skip_build != 'true' }}
+        run: |
+          set +e
+          flutter build ios --release --no-codesign > /tmp/goguma_build.log 2>&1
+          STATUS=$?
+          echo "flutter build exit: $STATUS"
+          echo "---- errors ----"
+          grep -nE "(error:|Error:|failed)" /tmp/goguma_build.log | head -40 || true
+          echo "---- tail ----"
+          tail -25 /tmp/goguma_build.log
+          exit $STATUS
+
+      - name: Upload build log
+        if: always() && inputs.skip_build != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildlog_${{ inputs.label || 'goguma' }}
+          path: /tmp/goguma_build.log
+          if-no-files-found: warn
+
+      - name: Package unsigned IPA
+        if: ${{ inputs.skip_build != 'true' }}
+        env:
+          LABEL: ${{ inputs.label || 'goguma' }}
+        run: |
+          set -euo pipefail
+          ls -la build/ios/iphoneos/ || true
+          mkdir -p Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/Runner.app
+          if [ -d Payload/Runner.app/Frameworks ]; then
+            find Payload/Runner.app/Frameworks -type d -name "*.framework" \
+              -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \; || true
+          fi
+          if [ -d Payload/Runner.app/PlugIns ]; then
+            find Payload/Runner.app/PlugIns -name "*.appex" -type d \
+              -exec codesign --force --sign - {} \; || true
+          fi
+          OUT="goguma_ios_${LABEL}_no_sign.ipa"
+          zip -q -r "$OUT" Payload
+          ls -lh "$OUT"
+          unzip -l "$OUT" | head -15
+
+      - name: Upload IPA
+        if: ${{ inputs.skip_build != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios_outputs_${{ inputs.label || 'goguma' }}
+          path: goguma_ios_*_no_sign.ipa
+          if-no-files-found: error
